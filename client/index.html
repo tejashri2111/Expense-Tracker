@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Expense Tracker</h1>
+
+    <div class="summary">
+
+        <div class="card">
+            <h3>Balance</h3>
+            <span id="balance">0</span>
+        </div>
+
+        <div class="card">
+            <h3>Income</h3>
+            <span id="income">0</span>
+        </div>
+
+        <div class="card">
+            <h3>Expense</h3>
+            <span id="expense">0</span>
+        </div>
+
+    </div>
+
+    <canvas id="expenseChart"></canvas>
+
+    <div class="add-transaction">
+        <h2>Add Transaction</h2>
+
+        <input type="text" id="title" placeholder="Title">
+        <input type="number" id="amount" placeholder="Amount">
+        <input type="date" id="date">
+
+        <select id="type">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+        </select>
+
+        <button id="addBtn">Add Transaction</button>
+    </div>
+
+    <div class="transactions">
+        <h2>Transactions</h2>
+        <ul id="transactionList"></ul>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/dashboard.js"></script>
+
+</body>

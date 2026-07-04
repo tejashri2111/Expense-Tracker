@@ -11,10 +11,13 @@ const search = document.getElementById("search");
 const balance = document.getElementById("balance");
 const income = document.getElementById("income");
 const expense = document.getElementById("expense");
+let filterType = "all";
 const welcomeUser = document.getElementById("welcomeUser");
 const logoutBtn = document.getElementById("logoutBtn");
 
-let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+let transactions = [];
+let editId = null;
+let expenseChart;
 
 addBtn.addEventListener("click", function () {
 
@@ -37,11 +40,36 @@ addBtn.addEventListener("click", function () {
         date
     };
 
-    transactions.push(transaction);
+    if (editId) {
 
-localStorage.setItem("transactions", JSON.stringify(transactions));
+    fetch(`http://localhost:5000/transactions/${editId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(transaction)
+    })
+    .then(response => response.json())
+    .then(data => {
+        editId = null;
+        loadTransactions();
+    });
 
-displayTransactions();
+} else {
+
+    fetch("http://localhost:5000/transactions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(transaction)
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadTransactions();
+    });
+
+}
 
 // Clear input fields
 document.getElementById("title").value = "";
@@ -60,6 +88,12 @@ function displayTransactions() {
     let totalExpense = 0;
 
     transactions.forEach(function (transaction, index) {
+        // FILTER LOGIC (NEW)
+    if (filterType !== "all" && transaction.type !== filterType) {
+        return;
+    }
+
+    // SEARCH FILTER (your existing code)
         if (!transaction.title.toLowerCase().includes(searchValue)) {
             return;
         }
@@ -91,34 +125,41 @@ function displayTransactions() {
     income.innerText = "₹" + totalIncome;
     expense.innerText = "₹" + totalExpense;
     balance.innerText = "₹" + (totalIncome - totalExpense);
+    updateChart(totalIncome, totalExpense);
 }
-function deleteTransaction(index) {
+async function deleteTransaction(index) {
 
-    transactions.splice(index, 1);
+    const id = transactions[index]._id;
 
-    localStorage.setItem("transactions", JSON.stringify(transactions));
+    await fetch(`http://localhost:5000/transactions/${id}`, {
+        method: "DELETE"
+    });
 
-    displayTransactions();
+    loadTransactions();
 
 }
 function editTransaction(index) {
 
     const transaction = transactions[index];
-    document.getElementById("title").value = transaction.title; 
+
+    editId = transaction._id;
+
+    document.getElementById("title").value = transaction.title;
     document.getElementById("amount").value = transaction.amount;
     document.getElementById("type").value = transaction.type;
     document.getElementById("category").value = transaction.category;
     document.getElementById("date").value = transaction.date;
 
-    transactions.splice(index, 1);
-
-    localStorage.setItem("transactions", JSON.stringify(transactions));
-
-    displayTransactions();
-
 }
 
-displayTransactions();
+async function loadTransactions() {
+    const response = await fetch("http://localhost:5000/transactions");
+    transactions = await response.json();
+    console.log(transactions);
+    displayTransactions();
+}
+
+loadTransactions();
 search.addEventListener("input", function () {
 
     displayTransactions();
@@ -137,3 +178,31 @@ logoutBtn.addEventListener("click", function () {
     window.location.href = "login.html";
 
 });
+function setFilter(type) {
+    filterType = type;
+    displayTransactions();
+}
+function updateChart(totalIncome, totalExpense) {
+    const canvas = document.getElementById("expenseChart");
+
+    if (!canvas) {
+        return;
+    }
+
+    const ctx = canvas.getContext("2d");
+
+    if (expenseChart) {
+        expenseChart.destroy();
+    }
+
+    expenseChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Income', 'Expense'],
+            datasets: [{
+                data: [totalIncome, totalExpense],
+                backgroundColor: ['#4CAF50', '#F44336']
+            }]
+        }
+    });
+}
