@@ -42,7 +42,7 @@ addBtn.addEventListener("click", function () {
 
     if (editId) {
 
-    fetch(`http://localhost:5000/transactions/${editId}`, {
+    fetch(`https://expense-tracker-ni9x.onrender.com/transactions/${editId}`, {, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -57,7 +57,7 @@ addBtn.addEventListener("click", function () {
 
 } else {
 
-    fetch("http://localhost:5000/transactions", {
+    fetch("https://expense-tracker-ni9x.onrender.com/transactions", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -131,7 +131,7 @@ async function deleteTransaction(index) {
 
     const id = transactions[index]._id;
 
-    await fetch(`http://localhost:5000/transactions/${id}`, {
+    await fetch(`https://expense-tracker-ni9x.onrender.com/transactions/${id}`,{
         method: "DELETE"
     });
 
@@ -153,7 +153,7 @@ function editTransaction(index) {
 }
 
 async function loadTransactions() {
-    const response = await fetch("http://localhost:5000/transactions");
+    const response = await fetch("https://expense-tracker-ni9x.onrender.com/transactions");
     transactions = await response.json();
     console.log(transactions);
     displayTransactions();
