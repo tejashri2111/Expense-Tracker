@@ -42,7 +42,7 @@ addBtn.addEventListener("click", function () {
 
     if (editId) {
 
-    fetch(`https://expense-tracker-ni9x.onrender.com/transactions/${editId}`, {, {
+    fetch(`https://expense-tracker-ni9x.onrender.com/transactions/${editId}`,  {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
