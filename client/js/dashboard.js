@@ -17,7 +17,7 @@ const welcomeUser = document.getElementById("welcomeUser");
 const logoutBtn = document.getElementById("logoutBtn");
 let transactions = [];
 let editId = null;
-let expenseChart;ese
+let expenseChart = null;
 
 addBtn.addEventListener("click", function () {
 
