@@ -6,6 +6,7 @@ if (isLoggedIn !== "true") {
 }
 const addBtn = document.getElementById("addBtn");
 const transactionList = document.getElementById("transactionList");
+const loading = document.getElementById("loading");
 const search = document.getElementById("search");
 
 const balance = document.getElementById("balance");
@@ -14,10 +15,9 @@ const expense = document.getElementById("expense");
 let filterType = "all";
 const welcomeUser = document.getElementById("welcomeUser");
 const logoutBtn = document.getElementById("logoutBtn");
-
 let transactions = [];
 let editId = null;
-let expenseChart;
+let expenseChart;ese
 
 addBtn.addEventListener("click", function () {
 
@@ -26,11 +26,27 @@ addBtn.addEventListener("click", function () {
     const type = document.getElementById("type").value;
     const category = document.getElementById("category").value;
     const date = document.getElementById("date").value;
+    const today = new Date().toISOString().split("T")[0];
 
-    if (title === "" || amount === 0) {
-        alert("Please fill all fields");
-        return;
-    }
+if (date > today) {
+    alert("Future dates are not allowed.");
+    return;
+}
+
+if (title.trim() === "") {
+    alert("Please enter a title.");
+    return;
+}
+
+if (amount <= 0 || isNaN(amount)) {
+    alert("Please enter a valid amount.");
+    return;
+}
+
+if (date === "") {
+    alert("Please select a date.");
+    return;
+}
 
     const transaction = {
         title,
@@ -99,18 +115,50 @@ function displayTransactions() {
         }
 
         const li = document.createElement("li");
-        li.innerHTML = `
-    <span>
-        <strong>${transaction.title}</strong><br>
-        Category: ${transaction.category}<br>
-        Date: ${transaction.date}
-    </span>
+li.innerHTML = `
+<div class="transaction-left">
 
-    <span>
-        ₹${transaction.amount}
-        <button onclick="editTransaction(${index})">Edit</button>
-        <button onclick="deleteTransaction(${index})">Delete</button>
-    </span>
+    <div class="transaction-title">
+        ${transaction.title}
+    </div>
+
+    <div class="transaction-info">
+
+        <span>
+            <i class="fa-solid fa-tag"></i>
+            ${transaction.category}
+        </span>
+
+        <span>
+            <i class="fa-solid fa-calendar"></i>
+            ${transaction.date}
+        </span>
+
+    </div>
+
+</div>
+
+<div class="transaction-right">
+
+    <div class="amount ${transaction.type}">
+        ${transaction.type === "income" ? "+" : "-"}₹${transaction.amount}
+    </div>
+
+    <div class="action-buttons">
+
+        <button class="edit-btn"
+        onclick="editTransaction(${index})">
+            <i class="fa-solid fa-pen"></i>
+        </button>
+
+        <button class="delete-btn"
+        onclick="deleteTransaction(${index})">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+
+    </div>
+
+</div>
 `;
         transactionList.appendChild(li);
 
@@ -129,14 +177,19 @@ function displayTransactions() {
 }
 async function deleteTransaction(index) {
 
+    const confirmDelete = confirm("Are you sure you want to delete this transaction?");
+
+    if (!confirmDelete) {
+        return;
+    }
+
     const id = transactions[index]._id;
 
-    await fetch(`https://expense-tracker-ni9x.onrender.com/transactions/${id}`,{
+    await fetch(`https://expense-tracker-ni9x.onrender.com/transactions/${id}`, {
         method: "DELETE"
     });
 
     loadTransactions();
-
 }
 function editTransaction(index) {
 
@@ -153,13 +206,23 @@ function editTransaction(index) {
 }
 
 async function loadTransactions() {
+
+    loading.style.display = "block";
+    transactionList.style.display = "none";
+
     const response = await fetch("https://expense-tracker-ni9x.onrender.com/transactions");
+
     transactions = await response.json();
-    console.log(transactions);
+
+    loading.style.display = "none";
+    transactionList.style.display = "block";
+
     displayTransactions();
 }
 
 loadTransactions();
+document.getElementById("date").max =
+    new Date().toISOString().split("T")[0];
 search.addEventListener("input", function () {
 
     displayTransactions();
@@ -196,13 +259,47 @@ function updateChart(totalIncome, totalExpense) {
     }
 
     expenseChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Income', 'Expense'],
-            datasets: [{
-                data: [totalIncome, totalExpense],
-                backgroundColor: ['#4CAF50', '#F44336']
-            }]
-        }
-    });
+    type: "doughnut",
+
+    data: {
+        labels: ["Income", "Expense"],
+
+        datasets: [{
+            data: [totalIncome, totalExpense],
+
+            backgroundColor: [
+                "#0F766E",
+                "#EF4444"
+            ],
+
+            borderColor: [
+                "#ffffff",
+                "#ffffff"
+            ],
+
+            borderWidth: 4,
+            hoverOffset: 15
+        }]
+    },
+
+    options: {
+        responsive: true,
+
+        plugins: {
+
+            legend: {
+                position: "bottom",
+
+                labels: {
+                    padding: 20,
+                    font: {
+                        size: 14
+                    }
+                }
+            }
+        },
+
+        cutout: "65%"
+    }
+});
 }
